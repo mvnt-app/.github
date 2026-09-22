@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import "@fontsource/ibm-plex-sans-kr/400.css";
 import "@fontsource/ibm-plex-sans-kr/500.css";
-import "@fontsource/ibm-plex-mono/400.css";
+import "@fontsource/jetbrains-mono/latin-400.css";
+import "@fontsource/jetbrains-mono/latin-500.css";
 import { Header } from "@/components/Header";
 import { Notifier } from "@/components/Notifier";
 import "./globals.css";

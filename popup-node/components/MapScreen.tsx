@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { InstallCard } from "@/components/InstallCard";
 import { Sky, type SkyStar } from "@/components/Sky";
 import { parseImagine } from "@/lib/imagine";
 import { placeStars } from "@/lib/layout";
@@ -20,7 +19,7 @@ type Star = {
   id: string;
   code: number;
   name: string;
-  band: "weak" | "mid" | "strong";
+  band: "dim" | "weak" | "mid" | "strong";
   hits: Hit[];
 };
 type Me = { id: string; code: number; name: string; slots: Slot[] };
@@ -122,7 +121,6 @@ export function MapScreen() {
   }, [me, stars, picked]);
 
   const pickedStar = stars.find((star) => star.id === picked) ?? null;
-  const top = pickedStar?.hits[0];
 
   async function leave() {
     await fetch("/api/session", { method: "DELETE" });
@@ -158,9 +156,6 @@ export function MapScreen() {
       </div>
       {me ? <Sky stars={skyStars} onPick={setPicked} /> : <div className="sky" />}
       <p className="hint drag-hint">드래그로 이동, 핀치나 버튼으로 확대.</p>
-      <div style={{ padding: "0 16px" }}>
-        <InstallCard compact />
-      </div>
 
       {error ? <p className="error" style={{ padding: "10px 16px 0" }}>{error}</p> : null}
 
@@ -185,11 +180,11 @@ export function MapScreen() {
               질문 고치기
             </Link>
           </>
-        ) : pickedStar && top ? (
+        ) : pickedStar ? (
           <>
             <div className="who">
               <span>NODE {pickedStar.code}</span>
-              <span>{BAND_LABEL[pickedStar.band]}</span>
+              <span>{pickedStar.band === "dim" ? "" : BAND_LABEL[pickedStar.band]}</span>
             </div>
             {pickedStar.hits.map((hit) => (
               <div key={hit.questionIndex}>
@@ -199,6 +194,7 @@ export function MapScreen() {
                 <AnswerText question={PROMPTS[hit.theirIndex].key} answer={hit.answer} />
               </div>
             ))}
+            {pickedStar.hits.length === 0 ? <p className="hint">겹치는 답은 없다.</p> : null}
             <Link className="btn" href={`/chat/${pickedStar.id}`} style={{ marginTop: 14 }}>
               채팅하기
             </Link>

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { askNotification, subscribePush } from "@/components/alerts";
+import { BackButton } from "@/components/BackButton";
 import { InstallCard } from "@/components/InstallCard";
 import { parseImagine } from "@/lib/imagine";
 import { IMAGINE_COPY, IMAGINE_WORLDS, PROMPTS } from "@/lib/prompts";
@@ -76,6 +77,7 @@ export default function JoinPage() {
 
   return (
     <main className="pad">
+      <BackButton fallback={editing ? "/map" : "/"} />
       <h1 className="lede">{editing ? "문장 고치기" : "노드 만들기"}</h1>
       <p className="sub">같은 결을 찾기 위한 말이다. SEEK와 OFFER는 짧게, IMAGINE은 세계를 고른다.</p>
 

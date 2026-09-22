@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { BackButton } from "@/components/BackButton";
 
 type Msg = { id: string; from: string; to: string; body: string; at: string };
 
@@ -88,9 +88,9 @@ export default function ChatPage() {
 
   return (
     <main style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
-      <div className="who" style={{ padding: "0 16px 8px" }}>
-        <span>{code ? `NODE ${code}` : "…"}</span>
-        <Link href="/map">맵</Link>
+      <div className="subhead">
+        <BackButton fallback="/map" />
+        <span className="me-code">{code ? `NODE ${code}` : "…"}</span>
       </div>
       <div
         className="log"

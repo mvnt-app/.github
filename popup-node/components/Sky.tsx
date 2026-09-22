@@ -6,7 +6,7 @@ import { chainOf, fitCam, zoomCam, type Cam, type Point } from "@/lib/layout";
 export type SkyStar = Point & {
   id: string;
   code: number;
-  band: "self" | "weak" | "mid" | "strong";
+  band: "self" | "dim" | "weak" | "mid" | "strong";
   selected: boolean;
 };
 
@@ -15,14 +15,16 @@ const WORLD = 1000;
 function weight(band: SkyStar["band"]) {
   if (band === "strong" || band === "self") return 3;
   if (band === "mid") return 2;
-  return 1;
+  if (band === "weak") return 1;
+  return 0;
 }
 
 function lineClass(a: SkyStar, b: SkyStar) {
   const level = Math.min(weight(a.band), weight(b.band));
   if (level >= 3) return "line strong";
   if (level === 2) return "line mid";
-  return "line weak";
+  if (level === 1) return "line weak";
+  return "line dim";
 }
 
 export function Sky({ stars, onPick }: { stars: SkyStar[]; onPick: (id: string) => void }) {

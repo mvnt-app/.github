@@ -23,15 +23,29 @@ export async function GET(request: Request) {
           .split(",")
           .filter((part) => part === "0" || part === "1" || part === "2")
           .map((part) => Number(part));
+  // 토글이 전부 꺼진 상태. 화면의 토글은 그대로 두고, 밝기만 세 질문으로 매긴다.
+  const showEveryFilled = rawOn !== null && on.length === 0;
+  const selected = showEveryFilled ? [0, 1, 2] : on;
 
   const nodes = await listNodes();
   const stars = [];
   let mode: "theme" | "embed" = "theme";
   for (const node of nodes) {
     if (node.id === me.id || !isFilled(node.slots)) continue;
-    const ranked = await rankAgainst(me, node, on);
+    const ranked = await rankAgainst(me, node, selected);
     mode = ranked.mode;
-    if (!ranked.band) continue;
+    if (!ranked.band) {
+      if (!showEveryFilled) continue;
+      stars.push({
+        id: node.id,
+        code: node.code,
+        name: node.name,
+        score: 0,
+        band: "dim",
+        hits: [],
+      });
+      continue;
+    }
     stars.push({
       id: node.id,
       code: node.code,

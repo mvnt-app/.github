@@ -9,8 +9,8 @@
     "check": "tsx lib/match.check.ts"
   },
   "dependencies": {
-    "@fontsource/ibm-plex-mono": "^5.2.5",
     "@fontsource/ibm-plex-sans-kr": "^5.2.5",
+    "@fontsource/jetbrains-mono": "^5.3.0",
     "next": "^15.5.3",
     "postgres": "^3.4.7",
     "react": "^19.1.1",
