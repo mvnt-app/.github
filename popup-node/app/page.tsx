@@ -69,6 +69,9 @@ export default function GatePage() {
             노드 만들기
           </a>
         )}
+        {!me && !testAgents ? (
+          <p className="hint">두 사람이 각자 노드를 만들면 상대가 별자리에 나타난다. 결이 약해도 희미한 점으로 남고, 눌러서 채팅할 수 있다.</p>
+        ) : null}
         {testAgents ? (
           <>
             <p className="hint">테스트는 탭을 두 개 열어 A와 B로 들어간다.</p>

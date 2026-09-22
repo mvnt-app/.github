@@ -274,6 +274,7 @@ export function MapScreen() {
         })}
       </div>
       <div className="legend">
+        <span><i className="d dim" />있음</span>
         <span><i className="d weak" />약</span>
         <span><i className="d mid" />중</span>
         <span><i className="d strong" />강</span>

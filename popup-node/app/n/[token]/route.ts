@@ -1,6 +1,6 @@
 import { setSessionId } from "@/lib/session";
 import { isFilled } from "@/lib/slots";
-import { claimTag, storageReady } from "@/lib/store";
+import { claimTag, storageMissingMessage, storageReady } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -9,7 +9,7 @@ type Ctx = { params: Promise<{ token: string }> };
 
 export async function GET(request: Request, ctx: Ctx) {
   if (!storageReady()) {
-    return new Response("DATABASE_URL이 없습니다. Vercel 환경 변수를 확인해 주세요.", { status: 503 });
+    return new Response(storageMissingMessage(), { status: 503 });
   }
   const { token } = await ctx.params;
   if (!/^[\w-]{1,64}$/.test(token)) {

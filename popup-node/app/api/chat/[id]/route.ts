@@ -2,7 +2,7 @@ import { threadMessages } from "@/lib/feed";
 import { sendPush } from "@/lib/push";
 import { readSessionId } from "@/lib/session";
 import { publicNode } from "@/lib/slots";
-import { addMessage, getNode, listMessages, markRead, saveNode, storageReady } from "@/lib/store";
+import { addMessage, getNode, listMessages, markRead, saveNode, storageMissingMessage, storageReady } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -10,7 +10,7 @@ export const runtime = "nodejs";
 type Ctx = { params: Promise<{ id: string }> };
 
 export async function GET(_request: Request, ctx: Ctx) {
-  if (!storageReady()) return Response.json({ error: "DATABASE_URL이 없습니다." }, { status: 503 });
+  if (!storageReady()) return Response.json({ error: storageMissingMessage() }, { status: 503 });
   const { id } = await ctx.params;
   const meId = await readSessionId();
   const me = meId ? await getNode(meId) : null;
@@ -27,7 +27,7 @@ export async function GET(_request: Request, ctx: Ctx) {
 }
 
 export async function POST(request: Request, ctx: Ctx) {
-  if (!storageReady()) return Response.json({ error: "DATABASE_URL이 없습니다." }, { status: 503 });
+  if (!storageReady()) return Response.json({ error: storageMissingMessage() }, { status: 503 });
   const { id } = await ctx.params;
   const meId = await readSessionId();
   const me = meId ? await getNode(meId) : null;

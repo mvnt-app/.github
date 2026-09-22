@@ -200,6 +200,12 @@ p { margin: 0; }
   background: #8d97ab;
 }
 
+.d.dim {
+  width: 3px;
+  height: 3px;
+  background: rgba(168, 178, 196, 0.7);
+  box-shadow: 0 0 4px 1px rgba(150, 162, 184, 0.35);
+}
 .d.weak {
   width: 4px;
   height: 4px;

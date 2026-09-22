@@ -30,12 +30,26 @@ type GlobalStore = {
 const g = globalThis as typeof globalThis & { __popupNode?: GlobalStore };
 if (!g.__popupNode) g.__popupNode = {};
 
+// Vercel Storage(Neon)는 DATABASE_URL을 넣고, 예전 Postgres 연결은 POSTGRES_URL을 넣는다.
+export function databaseUrl() {
+  const raw = process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.POSTGRES_PRISMA_URL || "";
+  return raw.trim();
+}
+
+export function storageMissingMessage() {
+  return "저장소가 연결되지 않았습니다. Vercel Storage에서 Postgres를 이 프로젝트에 연결한 뒤 다시 배포하세요.";
+}
+
+function testAgentsOn() {
+  return process.env.ENABLE_TEST_AGENTS !== "false";
+}
+
 function usePg() {
-  return Boolean(process.env.DATABASE_URL);
+  return Boolean(databaseUrl());
 }
 
 export function storageReady() {
-  if (process.env.VERCEL && !process.env.DATABASE_URL) return false;
+  if (process.env.VERCEL && !databaseUrl()) return false;
   return true;
 }
 
@@ -77,6 +91,7 @@ async function writeBag(bag: Bag) {
 }
 
 function seedInto(bag: Bag) {
+  if (!testAgentsOn()) return false;
   let added = false;
   for (const seed of SEEDS) {
     const index = bag.nodes.findIndex((node) => node.id === seed.id);
@@ -114,7 +129,7 @@ async function withFile<T>(fn: (bag: Bag, dirty: () => void) => T | Promise<T>):
 
 function sqlClient() {
   if (!g.__popupNode!.sql) {
-    const url = process.env.DATABASE_URL as string;
+    const url = databaseUrl();
     const local = /localhost|127\.0\.0\.1/.test(url);
     g.__popupNode!.sql = postgres(url, {
       max: 1,
@@ -161,6 +176,7 @@ async function ensurePg() {
           v jsonb not null
         );
       `);
+      if (!testAgentsOn()) return;
       for (const seed of SEEDS) {
         const node = materializeSeed(seed);
         await sql`
@@ -221,7 +237,7 @@ function rowToNode(row: PersonRow): NodeRecord {
 
 async function requireStorage() {
   if (!storageReady()) {
-    throw new Error("DATABASE_URL이 없습니다. Vercel에서는 data/store.json이 유지되지 않습니다.");
+    throw new Error(storageMissingMessage());
   }
   if (usePg()) await ensurePg();
 }

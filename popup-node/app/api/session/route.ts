@@ -1,5 +1,5 @@
 import { cleanSlots, publicNode } from "@/lib/slots";
-import { createGuest, getNode, saveNode, storageReady } from "@/lib/store";
+import { createGuest, getNode, saveNode, storageMissingMessage, storageReady } from "@/lib/store";
 import { clearSessionId, readSessionId, setSessionId, testAgentsEnabled } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -11,7 +11,7 @@ function fail(message: string, status: number) {
 
 export async function GET() {
   if (!storageReady()) {
-    return fail("DATABASE_URL이 없습니다. Vercel에서는 파일 저장을 쓸 수 없습니다.", 503);
+    return fail(storageMissingMessage(), 503);
   }
   const id = await readSessionId();
   const node = id ? await getNode(id) : null;
@@ -23,7 +23,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   if (!storageReady()) {
-    return fail("DATABASE_URL이 없습니다. Vercel에서는 파일 저장을 쓸 수 없습니다.", 503);
+    return fail(storageMissingMessage(), 503);
   }
   const body = (await request.json().catch(() => null)) as {
     agent?: string;

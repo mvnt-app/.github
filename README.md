@@ -9,4 +9,4 @@
 | `archive/` | 사람이 다시 읽는 작업 기록. 서비스에 포함되지 않는다. |
 | `ai/` | 다음 작업에 다시 넣기 위한 메모. 배포하지 않는다. |
 
-팝업 웹의 서버는 따로 없다. 로컬은 `popup-node`의 Next 개발 서버, 배포는 Vercel + Postgres.
+팝업 웹의 서버는 따로 없다. 로컬은 `popup-node`의 Next 개발 서버. 배포는 Vercel이고, 저장은 그 프로젝트에 연결한 Postgres다. 두 사람이 쓰는 절차는 `popup-node/README.md`.
