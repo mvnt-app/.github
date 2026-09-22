@@ -1,6 +1,7 @@
 import { mkdir, readFile, rename, writeFile } from "fs/promises";
 import path from "path";
 import postgres from "postgres";
+import { testAgentsEnabled } from "./flags";
 import { emptySlots } from "./prompts";
 import { materializeSeed, patchSeedSlots, SEEDS } from "./seed";
 import type { Bag, Message, NodeRecord, Slot } from "./types";
@@ -38,10 +39,6 @@ export function databaseUrl() {
 
 export function storageMissingMessage() {
   return "저장소가 연결되지 않았습니다. Vercel Storage에서 Postgres를 이 프로젝트에 연결한 뒤 다시 배포하세요.";
-}
-
-function testAgentsOn() {
-  return process.env.ENABLE_TEST_AGENTS !== "false";
 }
 
 function usePg() {
@@ -91,7 +88,7 @@ async function writeBag(bag: Bag) {
 }
 
 function seedInto(bag: Bag) {
-  if (!testAgentsOn()) return false;
+  if (!testAgentsEnabled()) return false;
   let added = false;
   for (const seed of SEEDS) {
     const index = bag.nodes.findIndex((node) => node.id === seed.id);
@@ -136,6 +133,7 @@ function sqlClient() {
       prepare: false,
       ssl: local ? false : "require",
       idle_timeout: 20,
+      connect_timeout: 10,
     });
   }
   return g.__popupNode!.sql;
@@ -176,7 +174,7 @@ async function ensurePg() {
           v jsonb not null
         );
       `);
-      if (!testAgentsOn()) return;
+      if (!testAgentsEnabled()) return;
       for (const seed of SEEDS) {
         const node = materializeSeed(seed);
         await sql`

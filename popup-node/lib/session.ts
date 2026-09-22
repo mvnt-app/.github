@@ -1,4 +1,7 @@
 import { cookies } from "next/headers";
+import { testAgentsEnabled } from "./flags";
+
+export { testAgentsEnabled };
 
 export const COOKIE = "node_id";
 
@@ -23,6 +26,3 @@ export async function clearSessionId() {
   jar.set(COOKIE, "", { httpOnly: true, path: "/", maxAge: 0 });
 }
 
-export function testAgentsEnabled() {
-  return process.env.ENABLE_TEST_AGENTS !== "false";
-}

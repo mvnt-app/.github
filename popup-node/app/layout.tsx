@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   title: "NODE",
   description: "질문 세 개로 맞는 노드만 밝히는 팝업 웹",
   manifest: "/manifest.json",
+  icons: { icon: "/icon.svg", apple: "/icon.svg" },
   appleWebApp: { capable: true, title: "NODE", statusBarStyle: "black" },
 };
 
