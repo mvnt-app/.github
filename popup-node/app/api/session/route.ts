@@ -43,7 +43,9 @@ export async function POST(request: Request) {
   }
 
   const slots = cleanSlots(body.slots);
-  if (!slots) return fail("질문과 답을 세 칸 모두 두 글자 이상 적어 주세요.", 400);
+  if (!slots) {
+    return fail("SEEK와 OFFER는 두 글자 이상 적어 주세요. IMAGINE은 세계를 고르거나, 두 글자 이상 적어도 됩니다.", 400);
+  }
   const name = String(body.name ?? "").trim().slice(0, 20) || "손님";
 
   if (body.update) {

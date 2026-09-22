@@ -367,6 +367,20 @@ p { margin: 0; }
   margin-top: 4px;
   font-size: 15px;
   line-height: 1.5;
+  overflow-wrap: break-word;
+}
+
+.imagine-read {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.imagine-read p { margin: 0; }
+
+.imagine-read .own {
+  white-space: pre-wrap;
+  padding-top: 2px;
 }
 
 .hits {
@@ -387,6 +401,29 @@ p { margin: 0; }
   letter-spacing: 0.14em;
   color: var(--muted);
   margin: 18px 0 8px;
+}
+
+.imagine-lead {
+  margin: 0 0 4px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.worlds {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0 12px;
+}
+
+.worlds .q {
+  width: 100%;
+  white-space: normal;
+  text-align: left;
+  line-height: 1.45;
+  border-radius: 14px;
+  padding: 8px 12px;
+  justify-content: flex-start;
 }
 
 .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }

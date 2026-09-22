@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { InstallCard } from "@/components/InstallCard";
 import { Sky, type SkyStar } from "@/components/Sky";
+import { parseImagine } from "@/lib/imagine";
 import { placeStars } from "@/lib/layout";
 import { PROMPTS } from "@/lib/prompts";
 
@@ -25,6 +26,23 @@ type Star = {
 type Me = { id: string; code: number; name: string; slots: Slot[] };
 
 const BAND_LABEL = { strong: "강", mid: "중", weak: "약" };
+
+function AnswerText({ question, answer }: { question: string; answer: string }) {
+  if (question === "IMAGINE") {
+    const imagine = parseImagine(answer);
+    if (imagine.selected.length) {
+      return (
+        <div className="say imagine-read">
+          {imagine.selected.map((line) => (
+            <p key={line}>{line}</p>
+          ))}
+          {imagine.words ? <p className="own">{imagine.words}</p> : null}
+        </div>
+      );
+    }
+  }
+  return <p className="say">{answer}</p>;
+}
 
 export function MapScreen() {
   const router = useRouter();
@@ -159,7 +177,7 @@ export function MapScreen() {
               {me.slots.map((slot, index) => (
                 <div key={PROMPTS[index].key}>
                   <p className="ask">{PROMPTS[index].key} · {PROMPTS[index].ko}</p>
-                  <p className="say">{slot.answer}</p>
+                  <AnswerText question={PROMPTS[index].key} answer={slot.answer} />
                 </div>
               ))}
             </div>
@@ -173,15 +191,14 @@ export function MapScreen() {
               <span>NODE {pickedStar.code}</span>
               <span>{BAND_LABEL[pickedStar.band]}</span>
             </div>
-            <p className="ask">
-              내 {PROMPTS[top.questionIndex].key} · 상대 {PROMPTS[top.theirIndex].key}
-            </p>
-            <p className="say">{top.answer}</p>
-            {pickedStar.hits.length > 1 ? (
-              <p className="hits">
-                {pickedStar.hits.map((hit) => `${PROMPTS[hit.questionIndex].key} ${BAND_LABEL[hit.band]}`).join(" · ")}
-              </p>
-            ) : null}
+            {pickedStar.hits.map((hit) => (
+              <div key={hit.questionIndex}>
+                <p className="ask">
+                  내 {PROMPTS[hit.questionIndex].key} · 상대 {PROMPTS[hit.theirIndex].key}
+                </p>
+                <AnswerText question={PROMPTS[hit.theirIndex].key} answer={hit.answer} />
+              </div>
+            ))}
             <Link className="btn" href={`/chat/${pickedStar.id}`} style={{ marginTop: 14 }}>
               채팅하기
             </Link>

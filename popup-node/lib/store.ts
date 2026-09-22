@@ -2,7 +2,7 @@ import { mkdir, readFile, rename, writeFile } from "fs/promises";
 import path from "path";
 import postgres from "postgres";
 import { emptySlots } from "./prompts";
-import { materializeSeed, SEEDS } from "./seed";
+import { materializeSeed, patchSeedSlots, SEEDS } from "./seed";
 import type { Bag, Message, NodeRecord, Slot } from "./types";
 
 function blankGuest(code: number, name: string, slots: Slot[], tag: string | null): NodeRecord {
@@ -86,8 +86,9 @@ function seedInto(bag: Bag) {
       continue;
     }
     const node = bag.nodes[index];
-    if (node.slots[0]?.question !== "SEEK") {
-      node.slots = seed.slots.map((slot) => ({ ...slot }));
+    const next = patchSeedSlots(node.slots, seed.slots);
+    if (next) {
+      node.slots = next;
       added = true;
     }
   }
@@ -176,12 +177,15 @@ async function ensurePg() {
           )
           on conflict (id) do nothing
         `;
-        await sql`
-          update node_person
-          set slots = ${sql.json(node.slots as unknown as postgres.JSONValue)}
-          where id = ${node.id}
-            and coalesce(slots->0->>'question', '') <> 'SEEK'
-        `;
+        const rows = await sql<{ slots: Slot[] }[]>`select slots from node_person where id = ${node.id} limit 1`;
+        const next = patchSeedSlots(rows[0]?.slots, node.slots);
+        if (next) {
+          await sql`
+            update node_person
+            set slots = ${sql.json(next as unknown as postgres.JSONValue)}
+            where id = ${node.id}
+          `;
+        }
       }
     })().catch((error) => {
       g.__popupNode!.pgReady = undefined;

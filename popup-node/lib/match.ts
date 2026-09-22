@@ -14,6 +14,10 @@ const THEMES: Record<string, string[]> = {
   bind: ["같은 결", "묶이"],
   space: ["조명", "설치", "사운드", "전시"],
   future: ["미래", "도시"],
+  // IMAGINE 영어 세계. A·B는 bioluminescent까지 겹쳐 강, 15는 world만 겹쳐 중.
+  // 18의 달빛 사회에는 이 단어가 없다.
+  world: ["world"],
+  glow: ["bioluminescent"],
 };
 
 const SOFT = ["아티스트"];

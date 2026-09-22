@@ -17,10 +17,26 @@ export const PROMPTS = [
     key: "IMAGINE",
     title: "I IMAGINE",
     ko: "같이 살고 싶은 미래",
-    guide: "같은 결로 묶이고 싶은 다른 하루",
-    placeholder: "설명 없이 같은 결로 묶이는 밤",
+    guide: "What kind of world do you want to live in?",
+    placeholder:
+      "What does it look like? How do people live there? What kind of technology, nature, or relationships exist?",
   },
 ] as const;
+
+export const IMAGINE_WORLDS = [
+  "A peaceful ecological valley, something like a hidden world shaped by wind, ruins, and nature",
+  "A luminous night world with bioluminescent plants and a quiet mystical atmosphere",
+  "Floating islands and airborne cities surrounded by clouds and gardens",
+  "A future-medieval world where ancient forms and advanced tools coexist",
+  "A world that feels like a sacred forest civilization",
+  "A moonlit society built around care, beauty, and autonomy",
+] as const;
+
+export const IMAGINE_COPY = {
+  question: "What kind of world do you want to live in?",
+  note: "It can be an idea, a feeling, a scene, a landscape, a city, a village, or a way of life.",
+  optional: "Optional — describe it in your own words:",
+} as const;
 
 // SEEK는 상대의 OFFER(없으면 SEEK)와, OFFER는 상대의 SEEK와, IMAGINE은 미래끼리.
 export const SLOT_TARGETS: readonly (readonly number[])[] = [
