@@ -1,48 +1,39 @@
-import { SLOT_TARGETS } from "./prompts";
+import { blendBand, themeHits } from "./match";
 import { SEEDS } from "./seed";
-import { bandOf, bestTarget } from "./match";
 
 const [a, b, c, d] = SEEDS;
-
-function rank(mine: string, answers: string[], slot: number) {
-  const hit = bestTarget(mine, answers, SLOT_TARGETS[slot]);
-  return { ...hit, band: bandOf(hit.score, "theme"), slot };
-}
-
-function bestNode(me: (typeof SEEDS)[number], other: (typeof SEEDS)[number]) {
-  let top = { score: 0, index: -1, band: null as ReturnType<typeof bandOf>, slot: -1 };
-  me.slots.forEach((slot, index) => {
-    const hit = rank(slot.answer, other.slots.map((item) => item.answer), index);
-    if (hit.score > top.score) top = hit;
-  });
-  return top;
-}
-
 const answers = (node: (typeof SEEDS)[number]) => node.slots.map((slot) => slot.answer);
+const mine = answers(a);
 
-const bAll = bestNode(a, b);
-const cAll = bestNode(a, c);
-const dAll = bestNode(a, d);
-const perSlot = [0, 1, 2].map((slot) => rank(a.slots[slot].answer, answers(b), slot));
-const dSeek = rank(a.slots[0].answer, answers(d), 0);
-const dOther = [1, 2].map((slot) => rank(a.slots[slot].answer, answers(d), slot));
+const bAll = themeHits(mine, answers(b), [0, 1, 2]);
+const cAll = themeHits(mine, answers(c), [0, 1, 2]);
+const dAll = themeHits(mine, answers(d), [0, 1, 2]);
+const seekOnly = themeHits(mine, answers(b), [0]);
 
-if (perSlot.some((hit) => hit.band !== "strong")) {
-  throw new Error(`B는 SEEK/OFFER/IMAGINE 모두 강이어야 한다. ${JSON.stringify(perSlot)}`);
+if (bAll.hits.length !== 3 || bAll.hits.some((hit) => hit.band !== "strong")) {
+  throw new Error(`B는 세 칸 모두 강이어야 한다. ${JSON.stringify(bAll)}`);
+}
+if (bAll.hits[0]?.theirIndex !== 1 || bAll.hits[1]?.theirIndex !== 0 || bAll.hits[2]?.theirIndex !== 2) {
+  throw new Error(`B는 SEEK↔OFFER, IMAGINE끼리여야 한다. ${JSON.stringify(bAll.hits)}`);
 }
 if (bAll.band !== "strong") throw new Error(`B 전체는 강. ${JSON.stringify(bAll)}`);
-if (cAll.band !== "mid" || cAll.slot !== 2) {
-  throw new Error(`15는 IMAGINE에서 중이어야 한다. ${JSON.stringify(cAll)}`);
+
+if (cAll.band !== "mid" || cAll.hits.length !== 1 || cAll.hits[0]?.questionIndex !== 2) {
+  throw new Error(`15는 IMAGINE에서만 중이어야 한다. ${JSON.stringify(cAll)}`);
 }
-if (dAll.band !== "weak" || dAll.slot !== 0 || dSeek.band !== "weak") {
-  throw new Error(`18은 SEEK에서만 약이어야 한다. ${JSON.stringify(dAll)} ${JSON.stringify(dOther)}`);
+if (dAll.band !== "weak" || dAll.hits.length !== 1 || dAll.hits[0]?.questionIndex !== 0 || dAll.hits[0]?.theirIndex !== 1) {
+  throw new Error(`18은 SEEK↔OFFER에서만 약이어야 한다. ${JSON.stringify(dAll)}`);
 }
-if (dOther.some((hit) => hit.band)) {
-  throw new Error(`18의 OFFER/IMAGINE은 비어야 한다. ${JSON.stringify(dOther)}`);
+if (seekOnly.hits[0]?.band !== "strong" || seekOnly.band !== "strong") {
+  throw new Error(`질문 하나만 보면 그 칸 밝기를 유지한다. ${JSON.stringify(seekOnly)}`);
 }
+if (blendBand(["weak", "weak"], 3) !== "weak") throw new Error("약한 겹침 두 개는 약으로 남긴다.");
+if (blendBand(["strong"], 3) !== "mid") throw new Error("세 질문 중 한 곳만 강하면 중이다.");
+if (blendBand(["strong", "weak"], 3) !== "strong") throw new Error("강이 있고 다른 곳도 겹치면 강이다.");
+if (blendBand(["mid", "mid", "weak"], 3) !== "strong") throw new Error("중간이 두 곳이면 강이다.");
 
 console.log("match ok", {
-  b: perSlot.map((hit) => hit.band),
-  c: { band: cAll.band, slot: cAll.slot, score: Number(cAll.score.toFixed(3)) },
-  d: { band: dAll.band, slot: dAll.slot, score: Number(dAll.score.toFixed(3)) },
+  b: bAll.hits.map((hit) => `${hit.questionIndex}->${hit.theirIndex}:${hit.band}`),
+  c: { band: cAll.band, slot: cAll.hits[0]?.questionIndex, score: Number(cAll.score.toFixed(3)) },
+  d: { band: dAll.band, slot: dAll.hits[0]?.questionIndex, score: Number(dAll.score.toFixed(3)) },
 });

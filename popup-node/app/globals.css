@@ -469,6 +469,59 @@ p { margin: 0; }
 .mine-list .ask { margin-top: 0; }
 .mine-list .say { font-size: 13px; }
 
+.overlap {
+  margin-top: 10px;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.pair {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.pair .ask-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.pair .ask {
+  margin-top: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.pair .axis {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.side {
+  margin-top: 8px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.shared {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.shared li {
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .back {
   align-self: flex-start;
   border: 0;

@@ -1,3 +1,4 @@
+import { SLOT_TARGETS } from "./prompts";
 import type { Band } from "./types";
 
 // 키 없을 때의 매칭. 임베딩이 있으면 이 점수는 쓰지 않는다.
@@ -79,9 +80,63 @@ function lexical(question: string, answer: string): number {
 export function scoreText(question: string, answer: string): number {
   if (!question.trim() || !answer.trim()) return 0;
   const lex = lexical(question, answer);
-  // 문장이 거의 같을 때만 글자 겹침을 쓴다. 짧은 겹침은 약/중을 흔든다.
-  const lexBoost = lex >= 0.55 ? lex : 0;
+  // 거의 같은 문장은 그대로 쓴다. 그보다 얕은 글자 겹침은 약까지만 올린다.
+  const lexBoost = lex >= 0.55 ? lex : lex >= 0.28 ? Math.min(lex, THEME_BAND.mid - 0.01) : 0;
   return Math.min(1, Math.max(themeScore(question, answer), softScore(question, answer), lexBoost));
+}
+
+// 선호 칸(SEEK↔OFFER, IMAGINE끼리)이 0.02 안이면 그 칸을 고른다. 더 잘 맞는 다른 칸이 있으면 그쪽으로 넘어간다.
+export function pickIndex(scores: number[], preferred: readonly number[], bias = 0.02): number {
+  const prefer = new Set(preferred);
+  let best = -1;
+  let boosted = -Infinity;
+  scores.forEach((score, index) => {
+    const next = score + (prefer.has(index) ? bias : 0);
+    if (next > boosted) {
+      boosted = next;
+      best = index;
+    }
+  });
+  return best;
+}
+
+// 질문을 하나만 보면 그 칸의 밝기 그대로.
+// 여러 질문을 보면, 강은 두 곳 이상이 겹칠 때. 한 곳만 강하면 중으로 내린다.
+// 약한 겹침이 두 개여도 중으로 올리지 않는다.
+export function blendBand(bands: Band[], selectedCount: number): Band | null {
+  if (!bands.length) return null;
+  if (selectedCount <= 1) return bands[0];
+  const strong = bands.filter((band) => band === "strong").length;
+  const solid = bands.filter((band) => band === "strong" || band === "mid").length;
+  if (bands.length >= 2 && strong >= 1) return "strong";
+  if (bands.length >= 3 && solid >= 2) return "strong";
+  if (solid >= 1 && bands.length >= 2) return "mid";
+  if (bands.length === 1 && bands[0] === "strong") return "mid";
+  if (bands.length === 1) return bands[0];
+  return "weak";
+}
+
+export function themeHits(mine: string[], theirs: string[], selected: number[]) {
+  const hits: { questionIndex: number; theirIndex: number; band: Band; score: number }[] = [];
+  for (const questionIndex of selected) {
+    const text = mine[questionIndex] ?? "";
+    if (text.trim().length < 2) continue;
+    const scores = theirs.map((answer) => scoreText(text, answer ?? ""));
+    const theirIndex = pickIndex(scores, SLOT_TARGETS[questionIndex] ?? []);
+    if (theirIndex < 0) continue;
+    const score = scores[theirIndex] ?? 0;
+    const band = bandOf(score, "theme");
+    if (!band) continue;
+    hits.push({ questionIndex, theirIndex, band, score });
+  }
+  return {
+    hits,
+    score: hits.reduce((max, hit) => Math.max(max, hit.score), 0),
+    band: blendBand(
+      hits.map((hit) => hit.band),
+      selected.length,
+    ),
+  };
 }
 
 export function bestTarget(mine: string, answers: string[], targets: readonly number[]) {

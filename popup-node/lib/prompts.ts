@@ -38,7 +38,8 @@ export const IMAGINE_COPY = {
   optional: "Optional — describe it in your own words:",
 } as const;
 
-// SEEK는 상대의 OFFER(없으면 SEEK)와, OFFER는 상대의 SEEK와, IMAGINE은 미래끼리.
+// 선호 짝. SEEK는 상대 OFFER, OFFER는 상대 SEEK, IMAGINE은 미래끼리.
+// 점수가 더 높으면 다른 칸과도 겹친다. 차이는 lib/match.ts pickIndex.
 export const SLOT_TARGETS: readonly (readonly number[])[] = [
   [1, 0],
   [0, 1],

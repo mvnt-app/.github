@@ -42,6 +42,7 @@ export async function GET(request: Request) {
         name: node.name,
         score: 0,
         band: "dim",
+        slots: node.slots,
         hits: [],
       });
       continue;
@@ -52,6 +53,7 @@ export async function GET(request: Request) {
       name: node.name,
       score: ranked.score,
       band: ranked.band,
+      slots: node.slots,
       hits: ranked.hits.map((hit) => ({
         questionIndex: hit.questionIndex,
         theirIndex: hit.theirIndex,

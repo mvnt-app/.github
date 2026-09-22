@@ -1,5 +1,5 @@
 import { cachedVector, embedEnabled } from "./embed";
-import { bandOf, cosineVec, scoreText } from "./match";
+import { bandOf, blendBand, cosineVec, pickIndex, scoreText } from "./match";
 import { SLOT_TARGETS } from "./prompts";
 import type { Band, NodeRecord } from "./types";
 
@@ -26,25 +26,22 @@ export async function rankAgainst(
   selected: number[],
 ): Promise<{ score: number; band: Band | null; hits: Hit[]; mode: "theme" | "embed" }> {
   let mode: "theme" | "embed" = embedEnabled() ? "embed" : "theme";
-  const answers = other.slots.map((slot) => slot.answer);
+  const answers = [0, 1, 2].map((index) => other.slots[index]?.answer ?? "");
 
   async function collect(use: "theme" | "embed") {
     const hits: Hit[] = [];
     for (const questionIndex of selected) {
       const mine = me.slots[questionIndex]?.answer ?? "";
       if (mine.trim().length < 2) continue;
-      let score = 0;
-      let theirIndex = -1;
-      for (const target of SLOT_TARGETS[questionIndex] ?? []) {
-        const next =
-          use === "theme" ? scoreText(mine, answers[target] ?? "") : await pairScore(mine, answers[target] ?? "", use);
-        if (next > score) {
-          score = next;
-          theirIndex = target;
-        }
+      const scores: number[] = [];
+      for (const answer of answers) {
+        scores.push(use === "theme" ? scoreText(mine, answer) : await pairScore(mine, answer, use));
       }
+      const theirIndex = pickIndex(scores, SLOT_TARGETS[questionIndex] ?? []);
+      if (theirIndex < 0) continue;
+      const score = scores[theirIndex] ?? 0;
       const band = bandOf(score, use);
-      if (!band || theirIndex < 0) continue;
+      if (!band) continue;
       hits.push({
         questionIndex,
         theirIndex,
@@ -53,18 +50,27 @@ export async function rankAgainst(
         answer: answers[theirIndex] ?? "",
       });
     }
-    hits.sort((a, b) => b.score - a.score);
+    hits.sort((a, b) => a.questionIndex - b.questionIndex);
     return hits;
   }
 
+  function pack(hits: Hit[], use: "theme" | "embed") {
+    const score = hits.reduce((max, hit) => Math.max(max, hit.score), 0);
+    return {
+      score,
+      band: blendBand(
+        hits.map((hit) => hit.band),
+        selected.length,
+      ),
+      hits,
+      mode: use,
+    };
+  }
+
   try {
-    const hits = await collect(mode);
-    const top = hits[0];
-    return { score: top?.score ?? 0, band: top?.band ?? null, hits, mode };
+    return pack(await collect(mode), mode);
   } catch {
     mode = "theme";
-    const hits = await collect(mode);
-    const top = hits[0];
-    return { score: top?.score ?? 0, band: top?.band ?? null, hits, mode };
+    return pack(await collect(mode), mode);
   }
 }
